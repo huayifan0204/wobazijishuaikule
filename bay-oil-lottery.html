@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海湾石油加油站 - 春节抽签</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定义动画 */
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: rotate(-5deg); }
+            20%, 40%, 60%, 80% { transform: rotate(5deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* 新增动画效果 */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-30px); }
+            60% { transform: translateY(-15px); }
+        }
+        
+        @keyframes countdown {
+            0% { transform: scale(3); opacity: 1; }
+            100% { transform: scale(0.5); opacity: 0; }
+        }
+        
+        @keyframes resultReveal {
+            0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        
+        /* 烟花效果 */
+        @keyframes fireworks {
+            0% {
+                transform: translate(0, 0) scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(var(--x), var(--y)) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y)) scale(1);
+                opacity: 0;
+            }
+        }
+        
+        .firework {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: fireworks 1s ease-out forwards;
+            pointer-events: none;
+        }
+        
+        /* 烟花粒子效果 */
+        @keyframes particle {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0) translateY(50px);
+                opacity: 0;
+            }
+        }
+        
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            animation: particle 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+        
+        .shake-animation {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        .bounce {
+            animation: bounce 0.8s ease-out;
+        }
+        
+        .countdown-animation {
+            animation: countdown 0.5s ease-out;
+        }
+        
+        .result-reveal {
+            animation: resultReveal 1s ease-out;
+        }
+        
+        .bg-bay-oil {
+            background-color: #003366;
+        }
+        
+        .text-bay-oil {
+            color: #003366;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-orange-100 to-red-100">
+    <!-- 背景音乐 -->
+    <audio id="background-music" loop autoplay>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        您的浏览器不支持音频元素。
+    </audio>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- 游戏标题 -->
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-bay-oil mb-2">🎉 海湾石油加油站 🎉</h1>
+            <h2 class="text-3xl font-semibold text-gray-800 mb-4">春节排班抽签</h2>
+            <p class="text-xl text-gray-600">7名员工 · 5名回家 · 2名留守</p>
+        </header>
+
+        <!-- 姓名验证区域 -->
+        <section id="name-verification" class="bg-white rounded-xl shadow-lg p-8 mb-10 max-w-2xl mx-auto">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">🔍 员工身份验证</h2>
+            <div class="space-y-6">
+                <div>
+                    <label for="employee-name" class="block text-lg font-medium text-gray-700 mb-2">请输入您的姓名：</label>
+                    <input type="text" id="employee-name" placeholder="例如：许红艳" 
+                           class="w-full px-6 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                </div>
+                <button id="verify-btn" 
+                        class="w-full bg-bay-oil text-white text-xl font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    ✅ 验证身份
+                </button>
+            </div>
+        </section>
+
+        <!-- 抽签区域 -->
+        <section id="lottery-section" class="hidden bg-white rounded-xl shadow-lg p-8 mb-10 max-w-2xl mx-auto">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">🎲 抽签环节</h2>
+                <p id="welcome-text" class="text-xl text-gray-600 mb-8"></p>
+                
+                <div class="mb-10">
+                    <button id="draw-btn" 
+                            class="px-16 py-8 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-3xl font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 pulse-animation">
+                        🎁 开始抽签
+                    </button>
+                </div>
+                
+                <p class="text-gray-600">点击按钮开始抽签，祝您好运！</p>
+            </div>
+        </section>
+
+        <!-- 结果显示区域 -->
+        <section id="result-section" class="hidden bg-white rounded-xl shadow-lg p-10 max-w-2xl mx-auto">
+            <div class="text-center">
+                <h2 class="text-4xl font-bold mb-6"></h2>
+                <div id="result-message" class="text-5xl font-bold mb-10"></div>
+                
+                <div class="mb-8">
+                    <button id="restart-btn" 
+                            class="px-12 py-4 bg-gray-700 text-white text-2xl font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                        🔄 重新开始
+                    </button>
+                </div>
+                
+                <p class="text-gray-600">请其他员工继续抽签</p>
+            </div>
+        </section>
+
+        <!-- 抽签结果历史 -->
+        <section id="history-section" class="bg-white rounded-xl shadow-lg p-8 mt-10 max-w-3xl mx-auto relative">
+            <!-- 刷新按钮 -->
+            <div class="absolute top-4 right-4">
+                <button id="refresh-btn" 
+                        class="px-4 py-2 bg-bay-oil text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center">
+                    🔄 刷新记录
+                </button>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-bay-oil mb-6 text-center">📋 所有抽签结果</h2>
+            <div id="results-history" class="space-y-4 max-h-96 overflow-y-auto"></div>
+        </section>
+
+        <!-- 密码验证模态框 -->
+        <div id="password-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
+                <h3 class="text-2xl font-bold text-bay-oil mb-6 text-center">🔒 请输入密码</h3>
+                <div class="space-y-4">
+                    <input type="password" id="refresh-password" placeholder="请输入刷新密码" 
+                           class="w-full px-6 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    <div class="flex space-x-4">
+                        <button id="password-cancel" 
+                                class="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                            取消
+                        </button>
+                        <button id="password-submit" 
+                                class="flex-1 bg-bay-oil text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                            确认
+                        </button>
+                    </div>
+                    <p id="password-error" class="text-red-500 text-center hidden">密码错误，请重新输入！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 烟花效果容器 -->
+        <div id="fireworks-container"></div>
+    </div>
+
+    <script>
+        // 全局变量
+        const TOTAL_EMPLOYEES = 7;
+        const GO_HOME_COUNT = 5;
+        const STAY_COUNT = 2;
+        
+        // 员工姓名数组
+        const VALID_EMPLOYEES = ["许红艳", "王国辉", "袁贤念", "马继峰", "陈丽", "王海月", "张东慧"];
+        
+        // 从localStorage加载数据
+        let drawnEmployees = JSON.parse(localStorage.getItem('drawnEmployees') || '[]');
+        let lotteryResults = JSON.parse(localStorage.getItem('lotteryResults') || '[]');
+        
+        // 计算剩余名额
+        let remainingGoHome = GO_HOME_COUNT - lotteryResults.filter(r => r.result).length;
+        let remainingStay = STAY_COUNT - lotteryResults.filter(r => !r.result).length;
+        
+        // 当前验证的员工
+        let currentEmployee = null;
+
+        // 生成烟花效果
+        function createFireworks(x, y) {
+            const container = document.getElementById('fireworks-container');
+            
+            // 生成多个烟花
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const firework = document.createElement('div');
+                    firework.className = 'firework';
+                    
+                    // 随机颜色
+                    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    firework.style.backgroundColor = color;
+                    
+                    // 设置起始位置
+                    firework.style.left = `${x}px`;
+                    firework.style.top = `${y}px`;
+                    
+                    // 随机方向和距离
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 100 + Math.random() * 100;
+                    const xOffset = Math.cos(angle) * distance;
+                    const yOffset = Math.sin(angle) * distance;
+                    firework.style.setProperty('--x', `${xOffset}px`);
+                    firework.style.setProperty('--y', `${yOffset}px`);
+                    
+                    container.appendChild(firework);
+                    
+                    // 生成粒子效果
+                    createParticles(x, y, color);
+                    
+                    // 移除烟花元素
+                    setTimeout(() => {
+                        firework.remove();
+                    }, 1000);
+                }, i * 200);
+            }
+        }
+        
+        // 生成烟花粒子
+        function createParticles(x, y, color) {
+            const container = document.getElementById('fireworks-container');
+            
+            // 生成多个粒子
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.backgroundColor = color;
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                
+                // 随机方向
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 20 + Math.random() * 30;
+                const xOffset = Math.cos(angle) * speed;
+                const yOffset = Math.sin(angle) * speed;
+                particle.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+                
+                container.appendChild(particle);
+                
+                // 移除粒子
+                setTimeout(() => {
+                    particle.remove();
+                }, 500);
+            }
+        }
+        
+        // 显示历史结果
+        function displayHistory() {
+            const historyContainer = document.getElementById('results-history');
+            
+            if (lotteryResults.length === 0) {
+                historyContainer.innerHTML = '<p class="text-center text-gray-600 py-8">暂无抽签结果</p>';
+                return;
+            }
+            
+            const resultsHTML = lotteryResults.map(result => {
+                const resultClass = result.result ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100';
+                const resultText = result.result ? '回家过年' : '抽到敬业福';
+                const resultIcon = result.result ? '🏠🎉' : '🎁';
+                const funnyEmoji = result.result ? '' : '😂';
+                
+                return `
+                    <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-full bg-bay-oil text-white flex items-center justify-center mr-4">
+                                ${resultIcon}
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">${result.employee}</h3>
+                                <p class="text-sm text-gray-600">${result.timestamp}</p>
+                            </div>
+                        </div>
+                        <div class="px-4 py-2 rounded-full ${resultClass} font-bold flex items-center">
+                            ${resultText}
+                            ${funnyEmoji}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            historyContainer.innerHTML = resultsHTML;
+        }
+
+        // 保存数据到localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('drawnEmployees', JSON.stringify(drawnEmployees));
+            localStorage.setItem('lotteryResults', JSON.stringify(lotteryResults));
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取元素
+            const verifyBtn = document.getElementById('verify-btn');
+            const drawBtn = document.getElementById('draw-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const nameInput = document.getElementById('employee-name');
+            const refreshBtn = document.getElementById('refresh-btn');
+            const passwordModal = document.getElementById('password-modal');
+            const passwordCancel = document.getElementById('password-cancel');
+            const passwordSubmit = document.getElementById('password-submit');
+            const refreshPassword = document.getElementById('refresh-password');
+            const passwordError = document.getElementById('password-error');
+            
+            // 显示历史结果
+            displayHistory();
+            
+            // 验证按钮事件
+            verifyBtn.addEventListener('click', function() {
+                const name = nameInput.value.trim();
+                verifyName(name);
+            });
+            
+            // 回车键验证
+            nameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const name = nameInput.value.trim();
+                    verifyName(name);
+                }
+            });
+            
+            // 抽签按钮事件
+            drawBtn.addEventListener('click', function() {
+                this.classList.add('shake-animation');
+                setTimeout(() => {
+                    this.classList.remove('shake-animation');
+                    drawLottery();
+                }, 500);
+            });
+            
+            // 重新开始按钮事件
+            restartBtn.addEventListener('click', function() {
+                resetGame();
+            });
+            
+            // 刷新按钮事件
+            refreshBtn.addEventListener('click', function() {
+                passwordModal.classList.remove('hidden');
+                refreshPassword.value = '';
+                passwordError.classList.add('hidden');
+            });
+            
+            // 取消密码验证
+            passwordCancel.addEventListener('click', function() {
+                passwordModal.classList.add('hidden');
+            });
+            
+            // 提交密码验证
+            passwordSubmit.addEventListener('click', function() {
+                const password = refreshPassword.value.trim();
+                if (password === '1011') {
+                    // 密码正确，刷新记录
+                    refreshRecords();
+                    passwordModal.classList.add('hidden');
+                } else {
+                    // 密码错误，显示错误信息
+                    passwordError.classList.remove('hidden');
+                    refreshPassword.classList.add('shake-animation');
+                    setTimeout(() => {
+                        refreshPassword.classList.remove('shake-animation');
+                    }, 500);
+                }
+            });
+            
+            // 密码框回车键提交
+            refreshPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    passwordSubmit.click();
+                }
+            });
+        });
+        
+        // 刷新全部记录
+        function refreshRecords() {
+            // 清空所有数据
+            drawnEmployees = [];
+            lotteryResults = [];
+            remainingGoHome = GO_HOME_COUNT;
+            remainingStay = STAY_COUNT;
+            
+            // 保存到localStorage
+            saveToLocalStorage();
+            
+            // 更新显示
+            displayHistory();
+            
+            // 显示成功消息
+            alert('所有抽签记录已成功刷新！');
+        }
+
+        // 姓名验证
+        function verifyName(name) {
+            if (!name) {
+                alert('请输入您的姓名！');
+                return;
+            }
+            
+            if (!VALID_EMPLOYEES.includes(name)) {
+                alert('大哥，名字别搞错啊！');
+                return;
+            }
+            
+            if (drawnEmployees.includes(name)) {
+                alert('您已经抽过签了！');
+                return;
+            }
+            
+            // 验证通过
+            currentEmployee = name;
+            drawnEmployees.push(name);
+            
+            // 显示抽签区域
+            document.getElementById('welcome-text').textContent = `欢迎您，${name}！`;
+            document.getElementById('name-verification').classList.add('hidden');
+            document.getElementById('lottery-section').classList.remove('hidden');
+            document.getElementById('lottery-section').classList.add('fade-in');
+        }
+
+        // 抽签函数
+        function drawLottery() {
+            const drawBtn = document.getElementById('draw-btn');
+            const lotterySection = document.getElementById('lottery-section');
+            
+            // 创建倒计时元素
+            const countdownDiv = document.createElement('div');
+            countdownDiv.className = 'text-center mb-8';
+            countdownDiv.innerHTML = `
+                <div id="countdown" class="text-8xl font-bold text-bay-oil mb-4"></div>
+                <p class="text-xl text-gray-600">准备开始...</p>
+            `;
+            
+            // 替换抽签按钮为倒计时
+            drawBtn.parentElement.replaceChild(countdownDiv, drawBtn);
+            
+            // 执行倒计时动画
+            const countdown = document.getElementById('countdown');
+            const countdownNumbers = [3, 2, 1, '🎊'];
+            
+            countdownNumbers.forEach((num, index) => {
+                setTimeout(() => {
+                    countdown.textContent = num;
+                    countdown.className = 'text-8xl font-bold text-bay-oil mb-4';
+                    
+                    // 添加动画效果
+                    if (num === '🎊') {
+                        countdown.classList.add('bounce', 'text-9xl');
+                    } else {
+                        countdown.classList.add('countdown-animation');
+                        setTimeout(() => {
+                            countdown.classList.remove('countdown-animation');
+                        }, 500);
+                    }
+                    
+                    // 倒计时结束，显示结果
+                    if (index === countdownNumbers.length - 1) {
+                        setTimeout(() => {
+                            // 随机决定结果
+                            const canGoHome = Math.random() < (remainingGoHome / (remainingGoHome + remainingStay));
+                            
+                            // 更新剩余名额
+                            if (canGoHome) {
+                                remainingGoHome--;
+                            } else {
+                                remainingStay--;
+                            }
+                            
+                            // 显示结果
+                            displayResult(canGoHome);
+                        }, 1000);
+                    }
+                }, index * 1000);
+            });
+        }
+
+        // 显示结果
+        function displayResult(canGoHome) {
+            const resultSection = document.getElementById('result-section');
+            const resultMessage = document.getElementById('result-message');
+            const resultTitle = resultSection.querySelector('h2');
+            
+            // 设置结果内容
+            if (canGoHome) {
+                resultTitle.textContent = '🎉 恭喜！';
+                resultMessage.textContent = '恭喜你回家快乐！';
+                resultTitle.className = 'text-4xl font-bold mb-6 result-reveal';
+                resultMessage.className = 'text-5xl font-bold mb-10 text-green-600 result-reveal';
+                
+                // 添加烟花效果
+                setTimeout(() => {
+                    const rect = resultMessage.getBoundingClientRect();
+                    const x = rect.left + rect.width / 2;
+                    const y = rect.top + rect.height / 2;
+                    createFireworks(x, y);
+                }, 500);
+            } else {
+                resultTitle.textContent = '💪 加油！';
+                resultMessage.textContent = '抽到敬业福 😂';
+                resultTitle.className = 'text-4xl font-bold mb-6 result-reveal';
+                resultMessage.className = 'text-5xl font-bold mb-10 text-red-600 result-reveal';
+            }
+            
+            // 保存结果到历史记录
+            const resultData = {
+                employee: currentEmployee,
+                result: canGoHome,
+                timestamp: new Date().toLocaleString('zh-CN')
+            };
+            lotteryResults.push(resultData);
+            saveToLocalStorage();
+            
+            // 更新历史记录显示
+            displayHistory();
+            
+            // 显示结果区域
+            document.getElementById('lottery-section').classList.add('hidden');
+            resultSection.classList.remove('hidden');
+            resultSection.classList.add('fade-in');
+        }
+
+        // 重置游戏
+        function resetGame() {
+            // 重置当前员工状态
+            currentEmployee = null;
+            document.getElementById('employee-name').value = '';
+            
+            // 显示验证区域
+            document.getElementById('result-section').classList.add('hidden');
+            document.getElementById('lottery-section').classList.add('hidden');
+            document.getElementById('name-verification').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
